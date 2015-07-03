@@ -41,7 +41,7 @@ Example
 
 The following example shows how easy this class is to use. For instance, user's formula is: ((8+(10*(3+5)))/2.1)-5^2
 
-```
+``` php
 $formula = new FormulaParser('((8+(10*(3+5)))/2.1)-5^2', 'en', 4);
 $result = $formula->getResult(); // will return array(0=>'done', 1=>16.9048)
 if ($result[0]=='done') {
@@ -50,6 +50,8 @@ if ($result[0]=='done') {
   echo "Error: $result[1]";
 }
 ```
+
+More examples and a live demo can be found on [www.yoursimpleformula.com](http://www.yoursimpleformula.com) - the web application made using Formula Parser.
 
 ###License
 
