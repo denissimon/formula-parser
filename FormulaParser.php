@@ -54,10 +54,10 @@ class FormulaParser implements IFormulaParser {
 	/**
 	 * Constructor
 	 *
-	 * @param string  $input_string	        The formula entered as a string
-	 * @param string  $language		Setting the language
-	 * @param integer $precision_rounding   Setting the maximum number of digits after the decimal point 
-	 * 				        in a calculated answer
+	 * @param string  $input_string	      The formula entered as a string
+	 * @param string  $language           Setting the language
+	 * @param integer $precision_rounding Setting the maximum number of digits after the decimal point 
+	 * 				      in a calculated answer
 	 */
 	public function __construct($input_string, $language, $precision_rounding)
 	{
@@ -68,8 +68,6 @@ class FormulaParser implements IFormulaParser {
 		}
 			
 		$this->_precision_rounding = abs((int)$precision_rounding);
-			
-		unset($input_string, $language, $precision_rounding);
 	}
 	
 	/**
@@ -88,7 +86,7 @@ class FormulaParser implements IFormulaParser {
 	/**
 	 * Returns the text of the formula passed to the constructor
 	 *
-	 * @return string	The entered formula
+	 * @return string The entered formula
 	 */
 	public function getFormula()
 	{
@@ -125,7 +123,7 @@ class FormulaParser implements IFormulaParser {
 	/**
 	 * Calculates first-order operations ^, * and /
 	 *
-	 * @param array	$array	An array containing the parsed subexpression of the formula
+	 * @param array	$array An array containing the parsed subexpression of the formula
 	 *
 	 * @return array
 	 */
@@ -208,7 +206,7 @@ class FormulaParser implements IFormulaParser {
 	/**
 	 * Calculates second-order operations + and -
 	 *
-	 * @param array	$array	An array containing the parsed subexpression of the formula
+	 * @param array	$array An array containing the parsed subexpression of the formula
 	 *
 	 * @return array
 	 */
@@ -244,8 +242,8 @@ class FormulaParser implements IFormulaParser {
 	/**
 	 * Parses and evaluates a subexpression of the formula
 	 *
-	 * @param string $str	A particular portion (subexpression) of the formula.
-	 *			It's in parentheses, or the whole formula if there are no parentheses.
+	 * @param string $str A particular portion (subexpression) of the formula.
+	 *		      It's in parentheses, or the whole formula if there are no parentheses.
 	 * @return float
 	 */
 	private function getAnswer( $str )
@@ -261,7 +259,7 @@ class FormulaParser implements IFormulaParser {
 			if (($i==0)&&($str[$i]=='-')) {	
 				$main_array[$count] = '-';
 			} else {
-			    // Spaces and tab characters will be skipped
+				// Spaces and tab characters will be skipped
 				if (($str[$i]==' ')||($str[$i]=='	')) {
 					$count++;		
 				// Number
@@ -394,7 +392,8 @@ class FormulaParser implements IFormulaParser {
 	
 	/**
 	 * Checks if there is an exponential expression like '(-2) ^ 4',
-	 * where the base is a negative number in parentheses. If yes - calculates it correctly.
+	 * where the base is a negative number in parentheses. 
+	 * If yes - calculates it correctly.
 	 *
 	 * @param string  $expression
 	 * @param integer $length
@@ -489,9 +488,9 @@ class FormulaParser implements IFormulaParser {
 	/** 
 	 * Parses and evaluates the entered formula
 	 *
-	 * @return array	array(0=>value1, 1=>value2), where value1 is the operating status, 
-	 * 			'done' or 'error', and value2 is a calculated answer 
-	 * 			or error message in the set language. 
+	 * @return array array(0=>value1, 1=>value2), where value1 is the operating status 
+	 * 		 'done' or 'error', and value2 is a calculated answer 
+	 * 		 or error message in the set language.
 	 */
 	public function getResult()
 	{
