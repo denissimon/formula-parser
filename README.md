@@ -7,6 +7,7 @@ Supported:
 * Operators +, -, *, /, ^
 * Numbers with decimal point '.'
 * Constants: pi
+* Functions: sqrt, abs, sin, cos, tan
 * Unlimited nested parentheses
 * Build-in validation and multilingual responses
 
