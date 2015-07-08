@@ -4,10 +4,12 @@ Formula Parser
 Parsing and evaluating mathematical formula entered as a string.
 
 Supported:
-* Operators +, -, *, /, ^
+
+* Operators: +, -, *, /, ^
+* Variables: x, y, z, a, b
 * Numbers with decimal point '.'
-* Constants: pi
-* Functions: sqrt, abs, sin, cos, tan
+* Constants: pi, e
+* Functions: sqrt, abs, sin, cos, tan, log, exp
 * Unlimited nested parentheses
 * Build-in validation and multilingual responses
 
@@ -16,35 +18,72 @@ Formula Parser uses Float for calculation and result.
 Setup and Usage
 ---------------
 
-Simply include this class into your project like so:
+After obtaining and including the class into your project, invoke it using the class constructor:
 
-`include_once('/libraries/FormulaParser.php');`
+``` php
+use FormulaParser\FormulaParser;
 
-Then invoke the class in your project using the class constructor:
+$formula = new FormulaParser($input_string, $language, $precision_rounding);
+```
 
-`$formula = new FormulaParser($input_string, $language, $precision_rounding);`
-
-`$input_string` The formula entered as a string
+`$input_string` The text of the formula
 
 `$language` Setting the language ('en', 'ru' or 'es')
 
 `$precision_rounding` Setting the maximum number of digits after the decimal point in a calculated answer
 
 
-The initialized object `$formula` has two public methods:
+The initialized object `$formula` has three public methods:
+
+`setVariables()` Sets variables.
 
 `getResult()` Returns an array(0=>value1, 1=>value2), where value1 is the operating status 'done' or 'error', and value2 is a calculated answer or error message in the set language.
 
-`getFormula()`  Returns the text of the formula passed to the constructor
+`getFormula()` Returns the text of the formula passed to the constructor.
 
-Example
--------
+### Constants
 
-The following example shows how easy this class is to use. For instance, user's formula is: ((8+(10*(3+5)))/2.1)-5^2
+|name|description|
+|----|-----------|
+|pi|the ratio of the circumference of a circle to its diameter, approximately = 3.141593
+|e|the base of the natural logarithm, approximately = 2.718282|
+
+### Functions
+
+|name|description|
+|----|-----------|
+|abs(n)|absolute value of _n_
+|sqrt(n)|square root of _n_
+|sin(n)|sine of _n_ radians
+|cos(n)|cosine of _n_ radians
+|tan(n)|tangent of _n_ radians
+|log(n)|natural logarithm of _n_
+|exp(n)|exponential value of _n_: _e_ ^ _n_|
+
+
+Examples
+--------
+
+The following examples shows how easy this class is to use. 
+
+**Example #1**. Formula: `(8+(10*(3-5)^2))/4.8`
 
 ``` php
-$formula = new FormulaParser('((8+(10*(3+5)))/2.1)-5^2', 'en', 4);
-$result = $formula->getResult(); // will return array(0=>'done', 1=>16.9048)
+$formula = new FormulaParser('(8+(10*(3-5)^2))/4.8', 'en', 4);
+$result = $formula->getResult(); // will return array(0=>'done', 1=>10)
+```
+
+**Example #2**. Formula: `sqrt(x^y) / log(exp(pi))`, and x = 4, y = 8.
+
+``` php
+$formula = new FormulaParser('sqrt(x^y) / log(exp(pi))', 'en', 4);
+$formula->setVariables(array('x'=>4, 'y'=>8));
+$result = $formula->getResult(); // will return array(0=>'done', 1=>81.4873)
+```
+
+Outputting the result:
+
+``` php
 if ($result[0]=='done') {
   echo "Answer: $result[1]";
 } elseif ($result[0]=='error') {
@@ -54,6 +93,7 @@ if ($result[0]=='done') {
 
 More examples and a live demo can be found on [www.yoursimpleformula.com](http://www.yoursimpleformula.com) - the web application made using Formula Parser.
 
-###License
+License
+-------
 
 This software is licensed under the [MIT license](https://github.com/denissimon/formula-parser/blob/master/LICENSE)
