@@ -640,7 +640,8 @@ class FormulaParser implements IFormulaParser {
 	 * Parses and evaluates the entered formula
 	 *
 	 * @return array  array(0=>value1, 1=>value2), where value1 is the operating status 
-	 * 		  'done' or 'error', and value2 is a calculated answer or error message in the set language.
+	 * 		  'done' or 'error', and value2 is a calculated answer 
+	 *                or error message in the set language.
 	 */
 	public function getResult()
 	{
