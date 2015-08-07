@@ -13,9 +13,7 @@ Supported:
 * Unlimited nested parentheses
 * Build-in validation and multilingual responses
 
-Formula Parser uses Float for calculation and result.
-
-Setup and Usage
+Usage
 ---------------
 
 After obtaining and including the class into your project, invoke it using the class constructor:
@@ -33,7 +31,7 @@ $formula = new FormulaParser($input_string, $language, $precision_rounding);
 `$precision_rounding` Setting the maximum number of digits after the decimal point in a calculated answer
 
 
-The initialized object `$formula` has three public methods:
+The initialized object `$formula` has three methods:
 
 `setVariables()` Sets variables.
 
@@ -45,8 +43,8 @@ The initialized object `$formula` has three public methods:
 
 |name|description|
 |----|-----------|
-|pi|the ratio of the circumference of a circle to its diameter, approximately = 3.141593
-|e|the base of the natural logarithm, approximately = 2.718282|
+|pi|the ratio of the circumference of a circle to its diameter, approx. = 3.141593
+|e|the base of the natural logarithm, approx. = 2.718282|
 
 ### Functions
 
@@ -58,19 +56,17 @@ The initialized object `$formula` has three public methods:
 |cos(n)|cosine of _n_ radians
 |tan(n)|tangent of _n_ radians
 |log(n)|natural logarithm of _n_
-|exp(n)|exponential value of _n_: _e_ ^ _n_|
+|exp(n)|exponential value of _n_|
 
 
 Examples
 --------
 
-The following examples shows how easy this class is to use. 
-
 **Example #1**. Formula: `(8+(10*(3-5)^2))/4.8`
 
 ``` php
 $formula = new FormulaParser('(8+(10*(3-5)^2))/4.8', 'en', 4);
-$result = $formula->getResult(); // will return array(0=>'done', 1=>10)
+$result = $formula->getResult(); // array(0=>'done', 1=>10)
 ```
 
 **Example #2**. Formula: `sqrt(x^y) / log(exp(pi))`, and x = 4, y = 8.
@@ -78,7 +74,7 @@ $result = $formula->getResult(); // will return array(0=>'done', 1=>10)
 ``` php
 $formula = new FormulaParser('sqrt(x^y) / log(exp(pi))', 'en', 4);
 $formula->setVariables(array('x'=>4, 'y'=>8));
-$result = $formula->getResult(); // will return array(0=>'done', 1=>81.4873)
+$result = $formula->getResult(); // array(0=>'done', 1=>81.4873)
 ```
 
 Outputting the result:
@@ -91,7 +87,7 @@ if ($result[0]=='done') {
 }
 ```
 
-More examples and a live demo can be found on [www.yoursimpleformula.com](http://www.yoursimpleformula.com) - the web application made using Formula Parser.
+More examples and a live demo can be found on [www.yoursimpleformula.com](http://www.yoursimpleformula.com).
 
 License
 -------
