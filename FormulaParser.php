@@ -282,36 +282,41 @@ class FormulaParser implements IFormulaParser
             } else {
                 $j = $i+3;
             }
-            while (true) {
-                if (isset($str[$j])) {
-                    if (((strstr('+-', $str[$j])) && ($arg === null))
-                    || (strstr('0123456789', $str[$j]))
-                    || (($str[$j] == '.') && (!strstr($arg, '.')))) {
-                        $arg .= $str[$j];
-                    } elseif ((strstr(' 	', $str[$j])) && (!strpbrk($arg, '0123456789'))) {
+            if (strpos($str, 'INF')) {
+                $str = 'INF';
+                $strlen = 3;
+            } else {
+                while (true) {
+                    if (isset($str[$j])) {
+                        if (((strstr('+-', $str[$j])) && ($arg === null))
+                        || (strstr('0123456789', $str[$j]))
+                        || (($str[$j] == '.') && (!strstr($arg, '.')))) {
+                            $arg .= $str[$j];
+                        } elseif ((strstr(' 	', $str[$j])) && (!strpbrk($arg, '0123456789'))) {
+                        } else {
+                            $arg = trim($arg);
+                            break;
+                        }
+                        $j++; 
                     } else {
-                        $arg = trim($arg);
                         break;
                     }
-                    $j++; 
-                } else {
-                    break;
                 }
-            }
-            if (!is_numeric($arg)) {
-                $this->correct = 0;
-            } else {
-                if ($function == 'exp') {
-                    $result = pow(M_E, $arg);
+                if (!is_numeric($arg)) {
+                    $this->correct = 0;
                 } else {
-                    $result = $function($arg);
+                    if ($function == 'exp') {
+                        $result = pow(M_E, $arg);
+                    } else {
+                        $result = $function($arg);
+                    }
                 }
-            }
-            if (($this->correct) && (is_numeric($result))) {
-                $str1 = substr($str, 0, $i);
-                $str2 = substr($str, $j);
-                $str = $str1.' '.$result.$str2;
-                $strlen = strlen($str);
+                if (($this->correct) && (is_numeric($result))) {
+                    $str1 = substr($str, 0, $i);
+                    $str2 = substr($str, $j);
+                    $str = $str1.' '.$result.$str2;
+                    $strlen = strlen($str);
+                }
             }
         }
     }
