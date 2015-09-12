@@ -14,7 +14,7 @@ namespace FormulaParser;
 interface IFormulaParser 
 {
     public function setVariables(array $vars);
-        
+    
     public function getResult();
     
     public function getFormula();
@@ -23,37 +23,31 @@ interface IFormulaParser
 class FormulaParser implements IFormulaParser 
 {
     /**
-     * The text of the formula for handling by getResult() method.
+     * The text of the formula.
      * @var string
      */
-    protected $formula = null;
-    
-    /**
-     * The text of the formula for returning by getFormula() method.
-     * @var string
-     */
-    protected $original_formula = null;
+    protected $formula, $original_formula = '';
     
     /**
      * The being evaluated subexpression of the formula.
      * @var string
      */
-    protected $expression = null;
+    protected $expression = '';
     
     /**
-     * Are there any errors during parsing: 1 or 0.
+     * Are there any errors during parsing.
      * @var integer
      */
     protected $correct = 1;
     
     /**
-     * A type of error for displaying a right message: 0, 1, 2, 3 or 4.
+     * Error type.
      * @var integer
      */
     protected $error_type = 0;
     
     /**
-     * The selected language in which messages should be displayed: 'en', 'ru' or 'es'.
+     * The selected language in which messages should be returned.
      * @var string
      */
     protected $lang = 'en';
@@ -65,10 +59,22 @@ class FormulaParser implements IFormulaParser
     protected $precision_rounding = 4;
     
     /**
-     * The passed variables x, y, z, a, b.
+     * Passed variables.
      * @var array
      */    
     protected $variables = array();
+    
+    /**
+     * Valid variables.
+     * @var array
+     */ 
+    protected $valid_variables = array('x','y','z','a','b');
+    
+    /**
+     * Valid functions.
+     * @var array
+     */
+    protected $valid_functions = array('abs','sin','cos','tan','log','exp','sqrt');
     
     /**
      * Constructor
@@ -81,10 +87,9 @@ class FormulaParser implements IFormulaParser
     public function __construct($input_string, $language, $precision_rounding) 
     {    
         $this->formula = $this->original_formula = $input_string;
-
-        if (in_array($language, array('en','ru','es'))) {
+        
+        if (in_array($language, array('en','ru','es')))
             $this->lang = $language;
-        }
         
         $this->precision_rounding = $precision_rounding;
     }
@@ -129,7 +134,7 @@ class FormulaParser implements IFormulaParser
      *
      * @return array
      */
-    private function resortByKey(array $array) 
+    private function resort(array $array) 
     {
         $new_array = array();
         foreach ($array as $item)
@@ -142,7 +147,7 @@ class FormulaParser implements IFormulaParser
      *
      * @return boolean
      */
-    private function validation() 
+    private function validate() 
     { 
         if (preg_match('/[^0-9*+-\/^.apiconstreqlgbxyz\s\t\(\)]/i', $this->expression)) {
             return false;
@@ -151,7 +156,7 @@ class FormulaParser implements IFormulaParser
     }
     
     /**
-     * Calculates first-order operations ^, *, /
+     * Calculates an operation ^
      *
      * @param array $array The parsed subexpression of the formula.
      *
@@ -159,72 +164,38 @@ class FormulaParser implements IFormulaParser
      */
     private function calculate1(array $array) 
     {
-        $a = 0;
-        if (in_array('^', $array)) {
-            for ($i=count($array)-1; $i>=0; $i--) {
-                $otp = 1;
-                if ($array[$i] === '^') {
-                    if ((is_numeric($array[$i-1])) && (is_numeric($array[$i+1]))) {
-                        if ($array[$i-1] < 0) {
-                            $a = pow($array[$i-1]*-1, $array[$i+1]);
-                            $otp = 2;
-                        } else {
-                            $a = pow($array[$i-1], $array[$i+1]);
-                        }
+        for ($i=count($array)-1; $i>=0; $i--) {
+            $otp = 1;
+            if ($array[$i] === '^') {
+                if ((is_numeric($array[$i-1])) && (is_numeric($array[$i+1]))) {
+                    if ($array[$i-1] < 0) {
+                        $a = pow($array[$i-1]*-1, $array[$i+1]);
+                        $otp = 2;
                     } else {
-                        $this->correct = 0;
-                        if (!$this->validation())
-                            $this->error_type = 1;
-                        break;
-                        return $array;
+                        $a = pow($array[$i-1], $array[$i+1]);
                     }
-                    unset($array[$i-1], $array[$i+1]);
-                    if ($otp == 1) {
-                        $array[$i] = $a;
-                    } else {
-                        $array[$i] = $a*-1;
-                    }
-                    $array = $this->resortByKey($array);
-                    $i = count($array)-1;
+                } else {
+                    $this->correct = 0;
+                    if (!$this->validate())
+                        $this->error_type = 1;
+                    break;
+                    return $array;
                 }
-            }    
-        }
-        $a = 0;
-        if ((in_array('*', $array)) || (in_array('/', $array))) {
-            for ($i=0; $i<=count($array)-1; $i++) {
-                if (($array[$i] === '*') || ($array[$i] === '/')) {
-                    if ((!is_numeric($array[$i-1])) || (!is_numeric($array[$i+1]))) {
-                        $this->correct = 0;
-                        if (!$this->validation())
-                            $this->error_type = 1;
-                        break;
-                        return $array;
-                    }
-                    if ($array[$i] === '*') {
-                        $a = $array[$i-1] * $array[$i+1];
-                    } elseif ($array[$i] === '/') {
-                        if ($array[$i+1] != 0) {
-                            $a = round($array[$i-1] / $array[$i+1], 14);
-                        } else {
-                            $this->correct = 0;
-                            if (!$this->validation())
-                                $this->error_type = 1;
-                            break;
-                            return $array;
-                        }
-                    }
-                    unset($array[$i-1], $array[$i+1]);
+                unset($array[$i-1], $array[$i+1]);
+                if ($otp == 1) {
                     $array[$i] = $a;
-                    $array = $this->resortByKey($array);
-                    $i = 0;
+                } else {
+                    $array[$i] = $a*-1;
                 }
+                $array = $this->resort($array);
+                $i = count($array)-1;
             }
         }
         return $array;
     }
     
     /**
-     * Calculates second-order operations +, -
+     * Calculates operations *, /
      *
      * @param array $array The parsed subexpression of the formula.
      *
@@ -232,91 +203,117 @@ class FormulaParser implements IFormulaParser
      */
     private function calculate2(array $array) 
     {
-        $a = 0;
-        if ((in_array('+', $array)) || (in_array('-', $array))) {
-            for ($i=0; $i<=count($array)-1; $i++) {
-                if (($array[$i] === '+') || ($array[$i] === '-')) {
-                    if ((!is_numeric($array[$i-1])) || (!is_numeric($array[$i+1]))) {
+        for ($i=0; $i<=count($array)-1; $i++) {
+            if (($array[$i] === '*') || ($array[$i] === '/')) {
+                if ((!is_numeric($array[$i-1])) || (!is_numeric($array[$i+1]))) {
+                    $this->correct = 0;
+                    if (!$this->validate())
+                        $this->error_type = 1;
+                    break;
+                    return $array;
+                }
+                if ($array[$i] === '*') {
+                    $a = $array[$i-1] * $array[$i+1];
+                } elseif ($array[$i] === '/') {
+                    if ($array[$i+1] != 0) {
+                        $a = $array[$i-1] / $array[$i+1];
+                    } else {
                         $this->correct = 0;
-                        if (!$this->validation())
+                        if (!$this->validate())
                             $this->error_type = 1;
                         break;
                         return $array;
                     }
-                    if ($array[$i] === '+') {
-                        $a = $array[$i-1] + $array[$i+1];
-                    } elseif ($array[$i] === '-') {
-                        $a = $array[$i-1] - $array[$i+1];
-                    }
-                    unset($array[$i-1], $array[$i+1]);
-                    $array[$i] = $a;
-                    $array = $this->resortByKey($array);
-                    $i = 0;
                 }
+                unset($array[$i-1], $array[$i+1]);
+                $array[$i] = $a;
+                $array = $this->resort($array);
+                $i = 0;
             }
         }
         return $array;
     }
     
     /**
-     * Evaluates functions.
+     * Calculates operations +, -
+     *
+     * @param array $array The parsed subexpression of the formula.
+     *
+     * @return array
+     */
+    private function calculate3(array $array) 
+    {
+        for ($i=0; $i<=count($array)-1; $i++) {
+            if (($array[$i] === '+') || ($array[$i] === '-')) {
+                if ((!is_numeric($array[$i-1])) || (!is_numeric($array[$i+1]))) {
+                    $this->correct = 0;
+                    if (!$this->validate())
+                        $this->error_type = 1;
+                    break;
+                    return $array;
+                }
+                if ($array[$i] === '+') {
+                    $a = $array[$i-1] + $array[$i+1];
+                } elseif ($array[$i] === '-') {
+                    $a = $array[$i-1] - $array[$i+1];
+                }
+                unset($array[$i-1], $array[$i+1]);
+                $array[$i] = $a;
+                $array = $this->resort($array);
+                $i = 0;
+            }
+        }
+        return $array;
+    }
+    
+    /**
+     * Calculates functions.
      *
      * @param string  $function The name of the function: sqrt, abs, sin, cos, tan, log or exp.
      * @param string  $str      The subexpression of the formula.
      * @param integer $strlen   The length of the given subexpression.
      * @param integer $i        $i value in the parent loop.
      */
-    private function evaluateFunction($function, &$str, &$strlen, $i) 
+    private function calculateFunction($function, &$str, &$strlen, $i) 
     {
-        $valid_functions = array('sqrt','abs','sin','cos','tan','log','exp');
-        if (!in_array($function, $valid_functions)) {
-            $this->correct = 0;
-            if (!$this->validation())
-                $this->error_type = 1;
-        }
-        if ($this->correct) {
-            $result = 0;
-            $arg = null;
-            if ($function == 'sqrt') {
-                $j = $i+4;
-            } else {
-                $j = $i+3;
-            }
-            if (strpos($str, 'INF')) {
-                $str = 'INF';
-                $strlen = 3;
-            } else {
-                while (true) {
-                    if (isset($str[$j])) {
-                        if (((strstr('+-', $str[$j])) && ($arg === null))
-                        || (strstr('0123456789', $str[$j]))
-                        || (($str[$j] == '.') && (!strstr($arg, '.')))) {
-                            $arg .= $str[$j];
-                        } elseif ((strstr(' 	', $str[$j])) && (!strpbrk($arg, '0123456789'))) {
-                        } else {
-                            $arg = trim($arg);
-                            break;
-                        }
-                        $j++; 
+        $j = ($function == 'sqrt') ? $i+4 : $i+3;
+        $result = 0; 
+        $arg = null;
+        
+        if (strpos($str, 'INF')) {
+            $str = 'INF';
+            $strlen = 3;
+        } else {
+            while (true) {
+                if (isset($str[$j])) {
+                    if (((strstr('+-', $str[$j])) && ($arg === null))
+                    || (strstr('0123456789', $str[$j]))
+                    || (($str[$j] == '.') && (!strstr($arg, '.')))) {
+                        $arg .= $str[$j];
+                    } elseif ((strstr(' 	', $str[$j])) && (!strpbrk($arg, '0123456789'))) {
                     } else {
+                        $arg = trim($arg);
                         break;
                     }
-                }
-                if (!is_numeric($arg)) {
-                    $this->correct = 0;
+                    $j++; 
                 } else {
-                    if ($function == 'exp') {
-                        $result = pow(M_E, $arg);
-                    } else {
-                        $result = $function($arg);
-                    }
+                    break;
                 }
-                if (($this->correct) && (is_numeric($result))) {
-                    $str1 = substr($str, 0, $i);
-                    $str2 = substr($str, $j);
-                    $str = $str1.' '.$result.$str2;
-                    $strlen = strlen($str);
+            }
+            if (!is_numeric($arg)) {
+                $this->correct = 0;
+            } else {
+                if ($function == 'exp') {
+                    $result = pow(M_E, $arg);
+                } else {
+                    $result = $function($arg);
                 }
+            }
+            if (($this->correct) && (is_numeric($result))) {
+                $str1 = substr($str, 0, $i);
+                $str2 = substr($str, $j);
+                $str = $str1.' '.$result.$str2;
+                $strlen = strlen($str);
             }
         }
     }
@@ -329,14 +326,13 @@ class FormulaParser implements IFormulaParser
      *
      * @return float
      */
-    private function getAnswer($str) 
+    private function parse($str) 
     {            
         $str = trim($str);
         $this->expression = $str;
         $strlen = strlen($str);
         $main_array = array();
         $count = 0;
-        $valid_variables = array('x','y','z','a','b');
         
         for ($i=0; $i<=$strlen-1; $i++) { 
             if (trim($str) == 'INF') {
@@ -361,11 +357,15 @@ class FormulaParser implements IFormulaParser
                     } else {
                         $main_array[$count] = $main_array[$count].$str[$i];
                     }
+                // Decimal point in float
+                } elseif (($str[$i] == '.') && (is_numeric($str[$i-1])) 
+                && (is_numeric($str[$i+1]))) {
+                    $main_array[$count] = $main_array[$count].$str[$i];
                 // Constant pi
-                } elseif (strtolower($str[$i-1].$str[$i]) == 'pi') {
-                } elseif (strtolower($str[$i].$str[$i+1]) == 'pi') {
+                } elseif ($str[$i-1].$str[$i] == 'pi') {
+                } elseif ($str[$i].$str[$i+1] == 'pi') {
                     if ($i+2 <= $strlen-1) {
-                        if (!strstr('+-*/^ 	', strtolower($str[$i+2]))) {
+                        if (!strstr('+-*/^ 	', $str[$i+2])) {
                             $this->correct = 0;
                             break;
                         } else {
@@ -375,10 +375,10 @@ class FormulaParser implements IFormulaParser
                         $count++; $main_array[$count] = M_PI;
                     }
                 // Constant e
-                } elseif ((strtolower($str[$i]) == 'e') && (strtolower($str[$i+1]) != 'x') 
+                } elseif (($str[$i] == 'e') && ($str[$i+1] != 'x') 
                 && (!is_numeric($str[$i-1]))) {
                     if ($i+1 <= $strlen-1) {
-                        if (!strstr('+-*/^ 	', strtolower($str[$i+1]))) {
+                        if (!strstr('+-*/^ 	', $str[$i+1])) {
                             $this->correct = 0;
                             break;
                         } else {
@@ -387,8 +387,8 @@ class FormulaParser implements IFormulaParser
                     } else {
                         $count++; $main_array[$count] = M_E;
                     }
-                // Number in scientific E notation
-                } elseif ((strtolower($str[$i]) == 'e') && (strtolower($str[$i+1]) != 'x') 
+                // Number in E notation
+                } elseif ((strtolower($str[$i]) == 'e') && ($str[$i+1] != 'x') 
                 && (is_numeric($str[$i-1]))) {
                     if ((preg_match('/(e)(?!\d|\+|\-)/i', $str[$i].$str[$i+1]))
                     || (!strstr('0123456789', $str[$i-1]))) { 
@@ -409,33 +409,26 @@ class FormulaParser implements IFormulaParser
                         }
                         $count++;
                     }
-                } elseif (($str[$i] == '-') && (strtolower($str[$i-1]) == 'e') && (is_numeric($str[$i+1])) 
-                && (is_numeric($str[$i-2]))) {
+                } elseif (($str[$i] == '-') && (strtolower($str[$i-1]) == 'e') 
+                && (is_numeric($str[$i+1])) && (is_numeric($str[$i-2]))) {
                     $main_array[$count] = $str[$i];
-                } elseif (($str[$i] == '+') && (strtolower($str[$i-1]) == 'e') && (is_numeric($str[$i+1])) 
-                && (is_numeric($str[$i-2]))) {
-                // Decimal point in float
-                } elseif (($str[$i] == '.') && (is_numeric($str[$i-1])) && (is_numeric($str[$i+1]))) {
-                    $main_array[$count] = $main_array[$count].$str[$i];
-                // Function sqrt
-                } elseif (strtolower($str[$i].$str[$i+1].$str[$i+2].$str[$i+3]) == 'sqrt') {
-                    $this->evaluateFunction('sqrt', $str, $strlen, $i);
-                // Function abs, sin, cos, tan, log or exp
-                } elseif ((strtolower($str[$i].$str[$i+1].$str[$i+2]) == 'abs')
-                || (strtolower($str[$i].$str[$i+1].$str[$i+2]) == 'sin')
-                || (strtolower($str[$i].$str[$i+1].$str[$i+2]) == 'cos')
-                || (strtolower($str[$i].$str[$i+1].$str[$i+2]) == 'tan')
-                || (strtolower($str[$i].$str[$i+1].$str[$i+2]) == 'log')
-                || (strtolower($str[$i].$str[$i+1].$str[$i+2]) == 'exp')) {
-                    $this->evaluateFunction($str[$i].$str[$i+1].$str[$i+2], $str, $strlen, $i);
+                } elseif (($str[$i] == '+') && (strtolower($str[$i-1]) == 'e') 
+                && (is_numeric($str[$i+1])) && (is_numeric($str[$i-2]))) {
+                // Function
+                } elseif ((in_array($str[$i].$str[$i+1].$str[$i+2], $this->valid_functions))
+                || ($str[$i].$str[$i+1].$str[$i+2].$str[$i+3] == 'sqrt')) {
+                    if ($str[$i].$str[$i+1].$str[$i+2].$str[$i+3] == 'sqrt') {
+                        $this->calculateFunction('sqrt', $str, $strlen, $i);
+                    } else {
+                        $this->calculateFunction($str[$i].$str[$i+1].$str[$i+2], $str, $strlen, $i);
+                    }
                 // Variable
-                } elseif ((stristr('xyzab', $str[$i])) && (count($this->variables))) {
-                    if (((array_key_exists($str[$i], $this->variables))
-                    && (in_array($str[$i], $valid_variables)))
+                } elseif ((in_array($str[$i], $this->valid_variables)) && (count($this->variables))) {
+                    if ((array_key_exists($str[$i], $this->variables))
                     && (is_numeric($this->variables[$str[$i]]))) {
                         if ($main_array[0] == '-' && $count == 0) $count++;
                         if ($i+1 <= $strlen-1) {
-                            if (!stristr('+-*/^ 	', $str[$i+1])) {
+                            if (!strstr('+-*/^ 	', $str[$i+1])) {
                                 $this->correct = 0;
                                 break;
                             } else {
@@ -455,7 +448,7 @@ class FormulaParser implements IFormulaParser
                     // Operator
                     $count++;
                     if (strstr('+-*/^', $str[$i])) {
-                        if (!stristr('0123456789+-spcatelbxyz 	', $str[$i+1])) {
+                        if (!strstr('0123456789+-spcatelbxyz 	', $str[$i+1])) {
                             $this->correct = 0;
                             break;
                         } else {
@@ -466,28 +459,25 @@ class FormulaParser implements IFormulaParser
                         }
                     } else {
                         $this->correct = 0;
+                        if (!$this->validate()) {
+                            $this->error_type = 1;
+                        }
+                        break;
                     }
                 }
             }
-            if (!$this->correct)
-                break;
         }
         
-        if (!$this->correct) {
-            if (!$this->validation()) {
-                $this->error_type = 1;
-            }
+        if (!$this->correct)
             return 0;
-        }
         
         if ($main_array[0] == INF) 
             return INF;
-                
-        $main_array = $this->resortByKey($main_array);
-                
-        // Combination of operators
-        $temp_array = array();
-        $i = 0;
+            
+        $main_array = $this->resort($main_array);
+            
+        // Combination of operators and numbers
+        $temp_array = array(); $i = 0;
         foreach ($main_array as $item) {
             if (($item === '+') || ($item === '-')) {
                 if ((($i == 0) && (is_numeric($main_array[$i+1])))
@@ -527,15 +517,15 @@ class FormulaParser implements IFormulaParser
         }
         
         $main_array = $temp_array;
-                
-        // Get the answer
+        
         $main_array = $this->calculate1($main_array);
         $main_array = $this->calculate2($main_array);
+        $main_array = $this->calculate3($main_array);
         
         if (count($main_array) != 1)
             $this->correct = 0;
         
-        return round($main_array[0], 14);
+        return $main_array[0];
     }
     
     /**
@@ -621,7 +611,7 @@ class FormulaParser implements IFormulaParser
                 return 'Número de apertura y cierre paréntesis debe ser igual.';
             }
         // Variable error
-        } elseif ($this->error_type == 4){
+        } elseif ($this->error_type == 4) {
             if ($this->lang == 'en') {
                 return 'Variable error.';
             } elseif ($this->lang == 'ru') {
@@ -629,7 +619,7 @@ class FormulaParser implements IFormulaParser
             } elseif ($this->lang == 'es') {
                 return 'Error de variable.';
             }
-        // Unexpected error
+        // Syntax error
         } else {
             if ($this->lang == 'en') {
                 return 'Syntax error.';
@@ -673,13 +663,12 @@ class FormulaParser implements IFormulaParser
             }
             
             // Check the syntax is correct when using parentheses
-            if (preg_match('/(\)[\s\t]*[^\)\+\-\*\/\^\s\t])|(\([\s\t]*?\))|([^nstgp\(\+\-\*\/\^\s\t][\s\t]*\()/', 
+            if (preg_match('/(\)(\s)*[^\)\+\-\*\/\^\s])|(\((\s)*?\))|([^nstgp\(\+\-\*\/\^\s](\s)*\()/', 
             $this->formula)) {
                 $this->correct = 0;
                 //goto finish;
             }
-                                
-            $temp = '';
+            
             $processing_formula = $this->formula;
             
             // Begin general parse
@@ -687,7 +676,7 @@ class FormulaParser implements IFormulaParser
             && ($this->correct)) {
                 $start_cursor_pos = 0; $end_cursor_pos = 0;
                 $temp = $processing_formula;
-            
+                
                 while (strstr($temp, '(')) {
                     $strlen_temp = strlen($temp);
                     for ($i=0; $i<=$strlen_temp-1; $i++) {
@@ -710,27 +699,20 @@ class FormulaParser implements IFormulaParser
                 $length = strlen($processing_formula);
                 
                 if (!empty($temp)) {
-                    $temp = $this->getAnswer($temp);
+                    $temp = $this->parse($temp);
                     $checkExp = $this->checkExp($processing_formula, $length, $end_cursor_pos, $temp);
-                    if ($checkExp->result) {
+                    if (isset($checkExp->result)) {
                         $temp = $checkExp->result;
                         $end_cursor_pos = $checkExp->cursor;
                     }
                 }
                 
-                // Optimize excess parentheses to dynamically reduce the number of iterations
-                if (($processing_formula[$start_cursor_pos-2] == '(') 
-                && ($processing_formula[$length - $end_cursor_pos+2] == ')')) {
-                    $processing_formula = substr($processing_formula, 0, $start_cursor_pos-2)
-                    .$temp.substr($processing_formula, $length - $end_cursor_pos+2);
-                } else {
-                    $processing_formula = substr($processing_formula, 0, $start_cursor_pos-1)
-                    .$temp.substr($processing_formula, $length - $end_cursor_pos+1);
-                }
+                $processing_formula = substr($processing_formula, 0, $start_cursor_pos-1)
+                .$temp.substr($processing_formula, $length - $end_cursor_pos+1);
             }
             $this->formula = $processing_formula;
         }
-        $result = $this->getAnswer($this->formula);
+        $result = $this->parse($this->formula);
         
         //finish:
         
