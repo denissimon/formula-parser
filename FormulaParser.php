@@ -1,10 +1,10 @@
 <?php
 /**
- * Formula Parser - Parsing and evaluating mathematical formula entered as a string
+ * Formula Parser - A library for parsing and evaluating mathematical formulas given as strings.
  *
  * @author   Denis Simon <denis.v.simon@gmail.com>
  *
- * @license  Licensed under MIT (https://github.com/denissimon/formula-parser/blob/master/LICENSE)
+ * @license  MIT (https://github.com/denissimon/formula-parser/blob/master/LICENSE)
  *
  * @version  2.3.0-2015.07.08
  */
@@ -22,73 +22,28 @@ interface IFormulaParser
  
 class FormulaParser implements IFormulaParser 
 {
-    /**
-     * The text of the formula.
-     * @var string
-     */
     protected $formula, $original_formula = '';
-    
-    /**
-     * The being evaluated subexpression of the formula.
-     * @var string
-     */
     protected $expression = '';
-    
-    /**
-     * Are there any errors during parsing.
-     * @var integer
-     */
     protected $correct = 1;
-    
-    /**
-     * Error type.
-     * @var integer
-     */
     protected $error_type = 0;
-    
-    /**
-     * The selected language in which messages should be returned.
-     * @var string
-     */
     protected $lang = 'en';
-    
-    /**
-     * The selected precision rounding of the answer.
-     * @var integer
-     */    
     protected $precision_rounding = 4;
-    
-    /**
-     * Passed variables.
-     * @var array
-     */    
-    protected $variables = array();
-    
-    /**
-     * Valid variables.
-     * @var array
-     */ 
-    protected $valid_variables = array('x','y','z','a','b');
-    
-    /**
-     * Valid functions.
-     * @var array
-     */
-    protected $valid_functions = array('abs','sin','cos','tan','log','exp','sqrt');
+    protected $variables = [];
+    protected $valid_variables = ['x', 'y', 'z', 'a', 'b'];
+    protected $valid_functions = ['abs', 'sin', 'cos', 'tan', 'log', 'exp', 'sqrt'];
     
     /**
      * Constructor
      *
      * @param string  $input_string       The text of the formula.
      * @param string  $language           Setting the language.
-     * @param integer $precision_rounding Setting the maximum number of digits after the decimal point 
-     *                                    in a calculated answer.
+     * @param integer $precision_rounding Setting the maximum number of digits after the decimal point.
      */
     public function __construct($input_string, $language, $precision_rounding) 
     {    
         $this->formula = $this->original_formula = $input_string;
         
-        if (in_array($language, array('en','ru','es')))
+        if (in_array($language, ['en','ru','es']))
             $this->lang = $language;
         
         $this->precision_rounding = $precision_rounding;
@@ -128,23 +83,19 @@ class FormulaParser implements IFormulaParser
     }
     
     /**
-     * Helper: sorts a given array by key.
-     *
      * @param array $array
      *
      * @return array
      */
     private function resort(array $array) 
     {
-        $new_array = array();
+        $new_array = [];
         foreach ($array as $item)
             $new_array[] = $item;
         return $new_array;
     }
     
     /**
-     * Validates the being evaluated subexpression of the formula.
-     *
      * @return boolean
      */
     private function validate() 
@@ -158,7 +109,7 @@ class FormulaParser implements IFormulaParser
     /**
      * Calculates an operation ^
      *
-     * @param array $array The parsed subexpression of the formula.
+     * @param array $array The subexpression of the formula.
      *
      * @return array
      */
@@ -197,7 +148,7 @@ class FormulaParser implements IFormulaParser
     /**
      * Calculates operations *, /
      *
-     * @param array $array The parsed subexpression of the formula.
+     * @param array $array The subexpression of the formula.
      *
      * @return array
      */
@@ -237,7 +188,7 @@ class FormulaParser implements IFormulaParser
     /**
      * Calculates operations +, -
      *
-     * @param array $array The parsed subexpression of the formula.
+     * @param array $array The subexpression of the formula.
      *
      * @return array
      */
@@ -269,10 +220,10 @@ class FormulaParser implements IFormulaParser
     /**
      * Calculates functions.
      *
-     * @param string  $function The name of the function: sqrt, abs, sin, cos, tan, log or exp.
-     * @param string  $str      The subexpression of the formula.
-     * @param integer $strlen   The length of the given subexpression.
-     * @param integer $i        $i value in the parent loop.
+     * @param string  $function
+     * @param string  $str
+     * @param integer $strlen
+     * @param integer $i
      */
     private function calculateFunction($function, &$str, &$strlen, $i) 
     {
@@ -321,8 +272,8 @@ class FormulaParser implements IFormulaParser
     /**
      * Parses and evaluates the subexpression of the formula.
      *
-     * @param string $str The subexpression of the formula.
-     *                    It's in parentheses, or the whole formula if there are no parentheses.
+     * @param string $str The subexpression inside parentheses, or entire formula 
+     *                    if it doesn't contain parentheses.
      *
      * @return float
      */
@@ -331,12 +282,12 @@ class FormulaParser implements IFormulaParser
         $str = trim($str);
         $this->expression = $str;
         $strlen = strlen($str);
-        $main_array = array();
+        $main_array = [];
         $count = 0;
         
         for ($i=0; $i<=$strlen-1; $i++) { 
             if (trim($str) == 'INF') {
-                $main_array = array(INF);
+                $main_array = [INF];
                 break;
             }
             if (($i == 0) && ($str[$i] == '-')) {
@@ -477,7 +428,8 @@ class FormulaParser implements IFormulaParser
         $main_array = $this->resort($main_array);
             
         // Combination of operators and numbers
-        $temp_array = array(); $i = 0;
+        $temp_array = []; 
+        $i = 0;
         foreach ($main_array as $item) {
             if (($item === '+') || ($item === '-')) {
                 if ((($i == 0) && (is_numeric($main_array[$i+1])))
@@ -529,9 +481,6 @@ class FormulaParser implements IFormulaParser
     }
     
     /**
-     * Checks if there is an exponential expression where the base is a negative number in parentheses, 
-     * e.g. '(-2) ^ 4', and if yes - calculates it correctly.
-     *
      * @param string  $expression
      * @param integer $length
      * @param integer $cursor
@@ -634,15 +583,14 @@ class FormulaParser implements IFormulaParser
     /** 
      * Parses and evaluates the entered formula.
      *
-     * @return array array(0=>value1, 1=>value2), where value1 is the operating status 
-     *               'done' or 'error', and value2 is a calculated answer 
-     *               or error message in the set language.
+     * @return array [0=>value1, 1=>value2], where value1 is 'done' or 'error', 
+     *               and value2 is a computed result or error message in the set language.
      */
     public function getResult() 
     {    
         $this->formula = trim($this->formula);
         
-        // Check that the formula has been entered
+        // Check that the formula is not empty
         if ($this->formula[0] == '') {
             $this->correct = 0;
             $this->error_type = 2;
@@ -671,7 +619,7 @@ class FormulaParser implements IFormulaParser
             
             $processing_formula = $this->formula;
             
-            // Begin general parse
+            // Begin a general parse
             while ((strstr($processing_formula, '(') || strstr($processing_formula, ')')) 
             && ($this->correct)) {
                 $start_cursor_pos = 0; $end_cursor_pos = 0;
@@ -717,9 +665,9 @@ class FormulaParser implements IFormulaParser
         //finish:
         
         if ($this->correct) {
-            return (array('done', round($result, (int) $this->precision_rounding)));
+            return ['done', round($result, (int) $this->precision_rounding)];
         } else {
-            return (array('error', $this->errorMsg()));
+            return ['error', $this->errorMsg()];
         }
     }
 }
