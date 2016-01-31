@@ -9,56 +9,60 @@ Supports:
 * Variables: x, y, z, a, b
 * Numbers with decimal point '.'
 * Numbers in E notation
-* Constants: pi, e
+* Constants: pi, e, Inf
 * Functions: sqrt, abs, sin, cos, tan, log, exp
 * Unlimited nested parentheses
+* NaN (Not a Number)
 
 [See it in action](http://www.yoursimpleformula.com).
 
-Usage
----------------
+Installation
+------------
 
-After obtaining and including the class into your project, invoke it using the class constructor:
+Requires [PHP 5.4 or higher](http://php.net).
+
+To install with [Composer](https://getcomposer.org):
+
+``` sh
+composer require denissimon/formula-parser
+```
+
+Usage
+-----
 
 ``` php
 use FormulaParser\FormulaParser;
 
-$formula = new FormulaParser($input_string, $language, $precision_rounding);
+require_once __DIR__ . '/vendor/autoload.php';
+
+$formula = '3*x^2 - 4*y + 3/y';
+$precision = 2; // Number of digits after the decimal point
+
+try {
+    $parser = new FormulaParser($formula, $precision);
+    $parser->setVariables(['x' => -4, 'y' => 8]);
+    $result = $parser->getResult(); // [0 => 'done', 1 => 16.38]
+} catch (\Exception $e) {
+    echo $e->getMessage(), "\n";
+}
 ```
 
-`$input_string` The text of the formula
+The `$precision` parameter has a default of 4, and it's not required to specify:
 
-`$language` Setting the language ('en', 'ru' or 'es')
+``` php
+$parser = new FormulaParser('3+4*2/(1-5)^8');
+$result = $parser->getResult(); // [0 => 'done', 1 => 3.0001]
+```
 
-`$precision_rounding` Setting the maximum number of digits after the decimal point
+The initialized object `$parser` has the following methods:
 
-The initialized object `$formula` has the following methods:
+`setVariables( $array )` Sets variables.
 
-`setVariables()` Sets variables.
-
-`getResult()` Returns an array [0=>value1, 1=>value2], where value1 is 'done' or 'error', and value2 is a computed result or error message in the set language.
+`getResult()` Returns an array [0 => v1, 1 => v2], where v1 is 'done' or 'error', and v2 is a computed result or error message, respectively. 
 
 The error message is issued if a validation error is detected.
 
 `getFormula()` Returns the text of the formula passed to the constructor.
-
-Examples
---------
-
-**Example #1**. Formula: `(8+(10*(3-5)^2))/4.8`
-
-``` php
-$formula = new FormulaParser('(8+(10*(3-5)^2))/4.8', 'en', 4);
-$result = $formula->getResult(); // [0=>'done', 1=>10]
-```
-
-**Example #2**. Formula: `sqrt(x^y) / log(exp(pi))`, and x = 4, y = 8.
-
-``` php
-$formula = new FormulaParser('sqrt(x^y) / log(exp(pi))', 'en', 4);
-$formula->setVariables(['x'=>4, 'y'=>8]);
-$result = $formula->getResult(); // [0=>'done', 1=>81.4873]
-```
 
 License
 -------
