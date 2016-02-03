@@ -31,9 +31,9 @@ Usage
 -----
 
 ``` php
-use FormulaParser\FormulaParser;
-
 require_once __DIR__ . '/vendor/autoload.php';
+
+use FormulaParser\FormulaParser;
 
 $formula = '3*x^2 - 4*y + 3/y';
 $precision = 2; // Number of digits after the decimal point
