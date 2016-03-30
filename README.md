@@ -14,7 +14,7 @@ Supports:
 * Unlimited nested parentheses
 * NaN (Not a Number)
 
-[See it in action](http://www.yoursimpleformula.com).
+[See it in action](http://formulaparser.denissimon.me).
 
 Installation
 ------------
