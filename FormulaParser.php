@@ -13,6 +13,8 @@ namespace FormulaParser;
 
 interface IFormulaParser
 {
+    public function setValidVariables(array $vars);
+    
     public function setVariables(array $vars);
 
     public function getResult();
@@ -59,19 +61,19 @@ class FormulaParser implements IFormulaParser
     }
 
     /**
-     * Returns the text of the formula passed to the constructor
+     * Overwrite default valid variables
      *
-     * @return string
+     * @param array $vars
      */
-    public function getFormula()
+    public function setValidVariables(array $vars)
     {
-        return $this->original_formula;
+        $this->valid_variables = $vars;
     }
 
     /**
      * Sets variables
      *
-     * @param array
+     * @param array $vars
      */
     public function setVariables(array $vars)
     {
@@ -79,13 +81,13 @@ class FormulaParser implements IFormulaParser
     }
 
     /**
-     * Overwrite default valid variables.
+     * Returns the text of the formula passed to the constructor
      *
-     * @param array $vars
+     * @return string
      */
-    public function setValidVariables(array $vars)
+    public function getFormula()
     {
-        $this->valid_variables = $vars;
+        return $this->original_formula;
     }
 
     /**
