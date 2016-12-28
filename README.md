@@ -56,11 +56,11 @@ $result = $parser->getResult(); // [0 => 'done', 1 => 3.0001]
 
 The initialized object `$parser` has the following methods:
 
+`setValidVariables( $array )` Overwrites default valid variables.
+
 `setVariables( $array )` Sets variables.
 
-`getResult()` Returns an array [0 => v1, 1 => v2], where v1 is 'done' or 'error', and v2 is a computed result or error message, respectively. 
-
-The error message is issued if a validation error is detected.
+`getResult()` Returns an array [0 => v1, 1 => v2], where v1 is 'done' or 'error', and v2 is a computed result or validation error message, respectively.
 
 `getFormula()` Returns the text of the formula passed to the constructor.
 
