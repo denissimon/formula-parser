@@ -6,7 +6,7 @@
  *
  * @license  MIT (https://github.com/denissimon/formula-parser/blob/master/LICENSE)
  *
- * @version  2.4.0-2016.01.31
+ * @version  2.5.0-2016.12.28
  */
 
 namespace FormulaParser;
@@ -23,12 +23,12 @@ interface IFormulaParser
 }
 
 class FormulaParser implements IFormulaParser
-{
-    protected $formula, $original_formula = '';
-    protected $expression = '';
+{    
+    protected $formula, $original_formula = "";
+    protected $precision = "";
+    protected $expression = "";
     protected $correct = 1;
     protected $error_type = 0;
-    protected $precision;
     protected $variables = [];
     protected $valid_variables = ['x', 'y', 'z', 'a', 'b'];
     protected $valid_functions = ['abs', 'sin', 'cos', 'tan', 'log', 'exp', 'sqrt'];
@@ -36,13 +36,14 @@ class FormulaParser implements IFormulaParser
     /**
      * Constructor
      *
-     * @param string  $formula      The formula given as a string
-     * @param integer $precision    The rounding precision (number of digits after the decimal point)
+     * @param string  $formula   The formula given as a string
+     * @param integer $precision The rounding precision (number of digits after the decimal point)
      */
-    public function __construct($formula, $precision = 4)
+    public function __construct($formula = "", $precision = 4)
     {
-        $this->formula = $this->original_formula = trim($formula);
-
+        if (!empty($formula))
+            $this->formula = $this->original_formula = trim($formula);
+        
         if (isset($precision))
             $this->precision = $precision;
     }
@@ -61,7 +62,7 @@ class FormulaParser implements IFormulaParser
     }
 
     /**
-     * Overwrite default valid variables
+     * Overwrites default valid variables
      *
      * @param array $vars
      */
@@ -89,26 +90,15 @@ class FormulaParser implements IFormulaParser
     {
         return $this->original_formula;
     }
-
-    /**
-     * @param array $array
-     *
-     * @return array
-     */
-    private function sort_(array $array)
-    {
-        $new_array = [];
-        foreach ($array as $item)
-            $new_array[] = $item;
-        return $new_array;
-    }
-
+    
     /**
      * @return boolean
      */
-    private function validate()
-    {
-        if (preg_match('/[^0-9\*\+\-\/\^\.apiconstrqlgbxyzeEINF\s\(\)]/', $this->expression)) {
+    private function validate() 
+    { 
+        $validate_str = count_chars(implode("", $this->valid_variables).
+                implode("", $this->valid_functions), 3);
+        if (preg_match('/[^0-9\*\+\-\/\^\.'.$validate_str.'EINF\s\(\)]/', $this->expression)) {
             return false;
         }
         return true;
@@ -167,7 +157,7 @@ class FormulaParser implements IFormulaParser
                 }
                 unset($array[$i-1], $array[$i+1]);
                 $array[$i] = ($otp == 1) ? $a : $a*-1;
-                $array = $this->sort_($array);
+                $array = array_values($array);
                 $i = count($array)-1;
             }
         }
@@ -204,7 +194,7 @@ class FormulaParser implements IFormulaParser
                 }
                 unset($array[$i-1], $array[$i+1]);
                 $array[$i] = $a;
-                $array = $this->sort_($array);
+                $array = array_values($array);
                 $i = 0;
             }
         }
@@ -235,7 +225,7 @@ class FormulaParser implements IFormulaParser
                 }
                 unset($array[$i-1], $array[$i+1]);
                 $array[$i] = $a;
-                $array = $this->sort_($array);
+                $array = array_values($array);
                 $i = 0;
             }
         }
@@ -433,8 +423,9 @@ class FormulaParser implements IFormulaParser
             && (is_numeric($str_ip1)) && (is_numeric($str_im2))) {
                 $main_array[$count] = $main_array[$count].$str_i;
             // Decimal point
-            } elseif (($str_i == '.') && (isset($str_im1) || isset($str_ip1))) {
-                $main_array[$count] = (isset($main_array[$count])) ?
+            } elseif (($str_i == '.') && ((isset($str_im1) && is_numeric($str_im1)) 
+            || (isset($str_ip1)) && is_numeric($str_ip1))) {
+                $main_array[$count] = (isset($main_array[$count])) ? 
                         $main_array[$count].'.' : '.';
             // Function
             } elseif ((in_array($str_i.$str_ip1.$str_ip2, $this->valid_functions))
@@ -490,7 +481,7 @@ class FormulaParser implements IFormulaParser
         if (!$this->correct)
             return 0;
 
-        $main_array = $this->sort_($main_array);
+        $main_array = array_values($main_array);
 
         if (isset($main_array[1])) {
 
@@ -525,7 +516,6 @@ class FormulaParser implements IFormulaParser
         $response = new \stdClass();
 
         if ($base < 0) {
-
             $test_func = preg_replace('/\s+/', '', $expression);
             $test_func = substr($test_func , 0, -strlen(preg_replace('/\s+/', '',
                     $base.substr($expression, $length-$cursor))));
@@ -592,6 +582,16 @@ class FormulaParser implements IFormulaParser
     }
 
     /**
+     * @param string $formula
+     */
+    private function prepare(&$formula) {
+        $formula = '( '.$formula.' )';    
+        $formula = str_replace('Inf', 'INF', $formula);
+        // Spaces and tab characters will be transformed
+        $formula = preg_replace('/[\+\-\*\/\^\(\)]/', ' ${0} ', preg_replace('/\s+/', '', $formula));
+    }
+
+    /**
      * @param array $matches
      *
      * @return string
@@ -617,16 +617,6 @@ class FormulaParser implements IFormulaParser
     }
 
     /**
-     * @param string $formula
-     */
-    private function prepare(&$formula) {
-        $formula = '('.$formula.')';
-        $formula = str_replace('Inf', 'INF', $formula);
-        // Spaces and tab characters will be transformed
-        $formula = preg_replace('/[\+\-\*\/\^\(\)]/', ' ${0} ', preg_replace('/\s+/', '', $formula));
-    }
-
-    /**
      * Groups the parts of the formula that must be evaluated first into parentheses
      *
      * @param string $formula
@@ -639,12 +629,14 @@ class FormulaParser implements IFormulaParser
                     [$this, 'match'], $formula);
             // Variables
             if (count($this->variables) > 0) {
-                $formula = preg_replace_callback('/[^etN](x|y|z|a|b)[^bsN]/',
+            	$valid_variables = implode("|", $this->valid_variables);
+                $formula = preg_replace_callback('/[\+\-\*\/\^ ]('.$valid_variables.')[ \+\-\*\/\^]/',
                         [$this, 'match1'], $formula);
             }
         } else {
             // Functions
-            $formula = preg_replace_callback('/(abs|sin|cos|tan|log|exp|sqrt)( )?[\+\-]?( )?[\d\.eEINF]+ /',
+            $valid_functions = implode("|", $this->valid_functions);
+            $formula = preg_replace_callback('/('.$valid_functions.')( )?[\+\-]?( )?[\d\.eEINF]+ /',
                     [$this, 'match2'], $formula);
         }
     }
@@ -682,7 +674,16 @@ class FormulaParser implements IFormulaParser
         if (!isset($this->formula[0])) {
             $this->correct = 0;
             $this->error_type = 2;
-            //goto finish;
+        }
+
+        // Check set variables
+        for ($i=0; $i<=count($this->valid_variables)-1; $i++) { 
+            if (strlen($this->valid_variables[$i]) != 1  
+            || !preg_match('/^([a-z])$/', $this->valid_variables[$i]) === 1
+            || $this->valid_variables[$i] == "e") {
+                $this->correct = 0;
+                $this->error_type = 4;
+            }
         }
 
         $this->prepare($this->formula);
@@ -695,14 +696,12 @@ class FormulaParser implements IFormulaParser
         if ($open_parentheses_count != $close_parentheses_count) {
             $this->correct = 0;
             $this->error_type = 3;
-            //goto finish;
         }
 
         // Check the syntax is correct when using parentheses
         if (preg_match('/(\)( )?[^\)\+\-\*\/\^ ])|(\(( )*?\))|([^nstgp\(\+\-\*\/\^ ]( )?\()/',
         $this->formula)) {
             $this->correct = 0;
-            //goto finish;
         }
 
         $processing_formula = $this->formula;
@@ -751,8 +750,6 @@ class FormulaParser implements IFormulaParser
         $this->formula = $processing_formula;
 
         $result = $this->parse($this->formula);
-
-        //finish:
 
         if ($this->correct) {
             return ['done', $this->round_($result, $this->precision)];
