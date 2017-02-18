@@ -1,7 +1,7 @@
 {
 	"name":        "denissimon/formula-parser",
 	"description": "Parsing and evaluating mathematical formulas given as strings.",
-	"keywords":    ["formula", "expression", "parser", "parsing", "math"],
+	"keywords":    ["parser", "parsing", "evaluation", "formula", "expression", "math"],
 	"license":     "MIT",
 	"authors":     [{
 		"name":  "Denis Simon",
