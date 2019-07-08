@@ -14,8 +14,6 @@ Supports:
 * Unlimited nested parentheses
 * NaN (Not a Number)
 
-[See it in action](http://formulaparser.denissimon.me).
-
 Installation
 ------------
 
@@ -63,6 +61,8 @@ The initialized object `$parser` has the following methods:
 `getResult()` Returns an array [0 => v1, 1 => v2], where v1 is 'done' or 'error', and v2 is a computed result or validation error message, respectively.
 
 `getFormula()` Returns the text of the formula passed to the constructor.
+
+More usage examples can be found in `tests/FormulaParserTest.php`
 
 License
 -------
