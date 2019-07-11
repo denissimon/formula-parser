@@ -1,3 +1,9 @@
+## v2.6.0
+
+* Refactored: code to PHP 7.3.5
+* Updated: composer.json
+* Updated: readme
+
 ## v2.5.0
 
 * Improved the algorithm: it gets better with this release!

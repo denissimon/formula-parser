@@ -1,6 +1,10 @@
 Formula Parser
 ==============
 
+[![Latest Stable Version](https://poser.pugx.org/denissimon/formula-parser/v/stable.svg)](https://packagist.org/packages/denissimon/formula-parser)
+[![Total Downloads](https://poser.pugx.org/denissimon/formula-parser/downloads)](https://packagist.org/packages/denissimon/formula-parser)
+[![License](https://poser.pugx.org/denissimon/formula-parser/license.svg)](https://github.com/denissimon/formula-parser/blob/master/LICENSE)
+
 Formula Parser is a library for parsing and evaluating mathematical formulas given as strings.
 
 Supports:
