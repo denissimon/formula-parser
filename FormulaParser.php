@@ -6,7 +6,7 @@
  *
  * @license  MIT (https://github.com/denissimon/formula-parser/blob/master/LICENSE)
  *
- * @version  2.6.1-2019.07.16
+ * @version  2.7.0-2019.09.12
  */
 
 namespace FormulaParser;
@@ -27,7 +27,7 @@ class FormulaParser implements IFormulaParser
     protected $formula, $original_formula = "";
     protected $precision = "";
     protected $expression = "";
-    protected $correct = 1;
+    protected $correct = true;
     protected $error_type = 0;
     protected $variables = [];
     protected $valid_variables = ['x', 'y', 'z', 'a', 'b'];
@@ -152,7 +152,7 @@ class FormulaParser implements IFormulaParser
                         $a = pow($array[$i-1], $array[$i+1]);
                     }
                 } else {
-                    $this->correct = 0;
+                    $this->correct = false;
                     break;
                 }
                 unset($array[$i-1], $array[$i+1]);
@@ -178,7 +178,7 @@ class FormulaParser implements IFormulaParser
             && ($array[$i] === '*' || $array[$i] === '/')) {
                 $this->checkInf($array[$i-1], $array[$i+1]);
                 if (!is_numeric($array[$i-1]) || !is_numeric($array[$i+1])) {
-                    $this->correct = 0;
+                    $this->correct = false;
                     break;
                 }
                 if ($array[$i] === '*') {
@@ -215,7 +215,7 @@ class FormulaParser implements IFormulaParser
             && ($array[$i] === '+' || $array[$i] === '-')) {
                 $this->checkInf($array[$i-1], $array[$i+1]);
                 if (!is_numeric($array[$i-1]) || !is_numeric($array[$i+1])) {
-                    $this->correct = 0;
+                    $this->correct = false;
                     break;
                 }
                 if ($array[$i] === '+') {
@@ -263,7 +263,7 @@ class FormulaParser implements IFormulaParser
 
         $this->checkInf($arg);
         if (!is_numeric($arg)) {
-            $this->correct = 0;
+            $this->correct = false;
         } else {
             if ($function == 'exp') {
                 $result = pow(M_E, $arg);
@@ -340,7 +340,7 @@ class FormulaParser implements IFormulaParser
                         if ($array_im1 === '-' && $array_im2 !== '-') {
                             $new_array[] = $array_ip1;
                         } elseif ($array_im1 === '-' && $array_im3 === '-') {
-                            $this->correct = 0;
+                            $this->correct = false;
                             break;
                         } else {
                             $new_array[] = $item.$array_ip1;
@@ -444,10 +444,11 @@ class FormulaParser implements IFormulaParser
             } elseif (in_array($str_i, $this->valid_variables) && count($this->variables)) {
                 if (array_key_exists($str_i, $this->variables)
                 && is_numeric($this->variables[$str_i])) {
+                    $count++;
                     $main_array[$count] = (float) $this->variables[$str_i];
                     $count++;
                 } else {
-                    $this->correct = 0;
+                    $this->correct = false;
                     $this->error_type = 4;
                     break;
                 }
@@ -472,7 +473,7 @@ class FormulaParser implements IFormulaParser
                         $count++;
                     } else {
                         // Nothing matches
-                        $this->correct = 0;
+                        $this->correct = false;
                         if (!$this->validate())
                             $this->error_type = 1;
                         break;
@@ -493,13 +494,15 @@ class FormulaParser implements IFormulaParser
             $main_array = $this->calculate2($main_array);
             $main_array = $this->calculate3($main_array);
 
-            if (count($main_array) != 1)
-                $this->correct = 0;
+            if (count($main_array) != 1) {
+                $this->correct = false;
+                return 0;
+            }
         }
 
         if (!isset($main_array[0]) || strstr('+-*/^', (string) $main_array[0])
         || substr_count((string) $main_array[0], '.') > 1) {
-            $this->correct = 0;
+            $this->correct = false;
             return 0;
         }
 
@@ -553,7 +556,8 @@ class FormulaParser implements IFormulaParser
                     if (substr($exp, -1) == '.')
                         $exp = substr($exp, 0, -1);
                     if (!is_numeric($exp) || strstr($exp, '.')) {
-                        $this->correct = $response->result = 0;
+                        $this->correct = false;
+                        $response->result = 0;
                     } else {
                         $response->result = pow(abs($base),$exp) * pow(-1,$exp);
                     }
@@ -632,7 +636,7 @@ class FormulaParser implements IFormulaParser
                     [$this, 'match'], $formula);
             // Variables
             if (count($this->variables) > 0) {
-            	$valid_variables = implode("|", $this->valid_variables);
+                $valid_variables = implode("|", $this->valid_variables);
                 $formula = preg_replace_callback('/[\+\-\*\/\^ ]('.$valid_variables.')[ \+\-\*\/\^]/',
                         [$this, 'match1'], $formula);
             }
@@ -675,7 +679,7 @@ class FormulaParser implements IFormulaParser
     {
         // Check that the formula is not empty
         if (!isset($this->formula[0])) {
-            $this->correct = 0;
+            $this->correct = false;
             $this->error_type = 2;
         }
 
@@ -684,7 +688,7 @@ class FormulaParser implements IFormulaParser
             if (strlen($this->valid_variables[$i]) != 1  
             || !preg_match('/^([a-z])$/', $this->valid_variables[$i]) === 1
             || $this->valid_variables[$i] == "e") {
-                $this->correct = 0;
+                $this->correct = false;
                 $this->error_type = 4;
             }
         }
@@ -697,14 +701,14 @@ class FormulaParser implements IFormulaParser
 
         // Check for an equality of opening and closing parentheses
         if ($open_parentheses_count != $close_parentheses_count) {
-            $this->correct = 0;
+            $this->correct = false;
             $this->error_type = 3;
         }
 
         // Check the syntax is correct when using parentheses
         if (preg_match('/(\)( )?[^\)\+\-\*\/\^ ])|(\(( )*?\))|([^nstgp\(\+\-\*\/\^ ]( )?\()/',
         $this->formula)) {
-            $this->correct = 0;
+            $this->correct = false;
         }
 
         $processing_formula = $this->formula;
@@ -712,16 +716,20 @@ class FormulaParser implements IFormulaParser
         // Begin a general parse
         while ((strstr($processing_formula, '(') || strstr($processing_formula, ')'))
         && $this->correct) {
-            $start_cursor_pos = 0; $end_cursor_pos = 0;
+            $start_cursor_pos = 0; 
+            $end_cursor_pos = 0;
+            
             $this->group($processing_formula, '');
+            
             $temp = $processing_formula;
 
             while (strstr($temp, '(')) {
                 $strlen_temp = strlen($temp);
                 for ($i=0; $i<=$strlen_temp-1; $i++) {
                     if (isset($temp[$i]) && $temp[$i] == '(') {
-                        $temp = substr($temp, $i+1);
                         $start_cursor_pos = $start_cursor_pos + $i+1;
+                        $temp = substr($temp, $i+1);
+                        break;
                     }
                 }
             }
@@ -750,9 +758,10 @@ class FormulaParser implements IFormulaParser
                     .$temp.substr($processing_formula, $length - $end_cursor_pos+1);
         }
 
-        $this->formula = $processing_formula;
-
-        $result = $this->parse($this->formula);
+        if ($this->correct) {
+            $this->formula = $processing_formula;
+            $result = $this->parse($this->formula);
+        }
 
         if ($this->correct) {
             return ['done', $this->round_($result, $this->precision)];

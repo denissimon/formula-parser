@@ -1,3 +1,13 @@
+## v2.7.0
+
+* Optimized the algorithm
+* Fixed parsing variables, e.g. 3 * 6x => Syntax error
+* Updated: unit tests
+
+## v2.6.1
+
+* Fixed PHP message "strstr(): Non-string needles will be interpreted as strings in the future." in some cases
+
 ## v2.6.0
 
 * Refactored: code to PHP 7.3.5
@@ -7,13 +17,13 @@
 ## v2.5.0
 
 * Improved the algorithm: it gets better with this release!
-* Added: ability to override default valid variables, that will allow to set variables with names not only x, y, z, a, b.
+* Added: ability to override default valid variables, which will allow to set variables not only with the names x, y, z, a, b.
 * Added: History.md
 * Updated: readme
 
 ## v2.4.0
 
-* Improved: now are available several consecutive operators, e.g. 10/--++2
+* Improved: now several consecutive operators are available, e.g. 10/--++2
 * Improved: a decimal number can be given as 1. or .1 which is equal to 1.0 or 0.1
 * Added: constant Inf
 * Added: processing of NaN

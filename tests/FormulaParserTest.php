@@ -222,6 +222,8 @@ class FormulaParserTest extends TestCase
             ['1.2.3', 'Syntax error'],
             ['.y', 'Syntax error', ['y' => '4']],
             ['y', 'Syntax error', []],
+            ['3 * x6', 'Syntax error', ['x' => '1']],
+            ['3 * 6x', 'Syntax error', ['x' => '1']],
             ['  ', 'Empty string'],
             ['_', 'Invalid character'],
             ['X', 'Invalid character', ['x' => '4']],
