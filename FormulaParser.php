@@ -6,7 +6,7 @@
  *
  * @license  MIT (https://github.com/denissimon/formula-parser/blob/master/LICENSE)
  *
- * @version  2.7.0-2019.09.12
+ * @version  2.7.1-2019.11.05
  */
 
 namespace FormulaParser;
@@ -298,12 +298,14 @@ class FormulaParser implements IFormulaParser
             end($new_array);
             $cur = current($new_array);
 
-            if ((@strstr('+-', (string) $item)) && (@strstr('+-', (string) $cur)) 
-            && (@strstr('+-', (string) $array_ip1))) {
+            if ((@strstr('+-', (string) $item)) 
+            && (!empty($cur) && @strstr('+-', (string) $cur)) 
+            && (!empty($array_ip1) && @strstr('+-', (string) $array_ip1))) {
                 if ($item === '-')
                     $new_array[key($new_array)] = ($cur == '+') ? '-' : '+';
-            } elseif ((@strstr('+-', (string) $item)) && (@strstr('*/^', (string) $cur)) 
-            && (@strstr('+-', (string) $array_ip1))) {
+            } elseif ((@strstr('+-', (string) $item)) 
+            && (!empty($cur) && @strstr('*/^', (string) $cur)) 
+            && (!empty($array_ip1) && @strstr('+-', (string) $array_ip1))) {
                 $new_array[] = $item;
             } else {
                 if ((@strstr('+-', (string) $item)) && ($key+1 != $i) 
@@ -333,7 +335,7 @@ class FormulaParser implements IFormulaParser
             if ($item === '+' || $item === '-') {
                 if (($j == 0 && is_numeric($array_ip1))
                 || ($j > 0 && is_numeric($array_ip1)
-                && @stristr('+-*/^e', (string) $array_im1))) {
+                && (!empty($array_im1) && @stristr('+-*/^e', (string) $array_im1)))) {
                     if ($item === '+') {
                         $new_array[] = $array_ip1;
                     } else {
@@ -360,9 +362,11 @@ class FormulaParser implements IFormulaParser
                             $new_array[] = $item;
                     }
                 }
-            } elseif (($j == 1 && is_numeric($item) && @strstr('+-', (string) $array_im1))
-            || ($j > 1 && is_numeric($item) && @strstr('+-', (string) $array_im1)
-            && (@stristr('+-*/^e', (string) $array_im2)))) {
+            } elseif (($j == 1 && is_numeric($item) 
+            && (!empty($array_im1) && @strstr('+-', (string) $array_im1)))
+            || ($j > 1 && is_numeric($item) 
+            && (!empty($array_im1) && @strstr('+-', (string) $array_im1))
+            && (!empty($array_im2) && @stristr('+-*/^e', (string) $array_im2)))) {
             } else {
                 $new_array[] = $item;
             }
@@ -410,12 +414,12 @@ class FormulaParser implements IFormulaParser
             // Constant pi
             } elseif ($str_im1.$str_i == 'pi') {
             } elseif (($str_i.$str_ip1 == 'pi')
-            && (!$str_ip2 || strstr('+-*/^ ', $str_ip2))) {
+            && (!$str_ip2 || (!empty($str_ip2) && strstr('+-*/^ ', $str_ip2)))) {
                 $count++;
                 $main_array[$count] = M_PI;
             // Constant e
             } elseif (($str_i == 'e') && ($str_ip1 != 'x') && (!is_numeric($str_im1))
-            && (!$str_ip1 || strstr('+-*/^ ', $str_ip1))) {
+            && (!$str_ip1 || (!empty($str_ip1) && strstr('+-*/^ ', $str_ip1)))) {
                 $count++;
                 $main_array[$count] = M_E;
             // Number in E notation
