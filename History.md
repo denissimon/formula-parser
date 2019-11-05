@@ -1,3 +1,7 @@
+## v2.7.1
+
+* Fixed PHP message "strstr(): Empty needle" in some cases
+
 ## v2.7.0
 
 * Optimized the algorithm
