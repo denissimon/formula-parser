@@ -1,6 +1,6 @@
 <?php
 
-require_once '../FormulaParser.php';
+namespace FormulaParser\Tests;
 
 use PHPUnit\Framework\TestCase;
 use FormulaParser\FormulaParser;
@@ -8,17 +8,17 @@ use FormulaParser\FormulaParser;
 class FormulaParserTest extends TestCase
 {
     // 1 -------- Test NAN ---------------------------------------------------------------->
-    
+
     /**
      * @dataProvider nanData
      */
     public function testNAN($input_string) {
         $parser = new FormulaParser($input_string);
         $result = $parser->getResult();
-        
+
         $this->assertEquals((string) $result[1], 'NAN');
     }
-    
+
     public function nanData() {
         return [
             ['sqrt(log(0)) + 1'],
@@ -35,8 +35,8 @@ class FormulaParserTest extends TestCase
             ['NaN']
         ];
     }
-    
-    // 2 -------- Test infinity ----------------------------------------------------------->    
+
+    // 2 -------- Test infinity ----------------------------------------------------------->
 
     /**
      * @dataProvider infData
@@ -44,10 +44,10 @@ class FormulaParserTest extends TestCase
     public function testINF($input_string, $expected_result) {
         $parser = new FormulaParser($input_string);
         $result = $parser->getResult();
-        
+
         $this->assertEquals($result[1], $expected_result);
     }
-    
+
     public function infData() {
         return [
             ['sqrt(5^500)', INF],
@@ -63,7 +63,7 @@ class FormulaParserTest extends TestCase
             ['Inf * -Inf', -INF]
         ];
     }
-    
+
     // 3 -------- Test variables ---------------------------------------------------------->
 
     /**
@@ -73,10 +73,10 @@ class FormulaParserTest extends TestCase
         $parser = new FormulaParser($input_string, $precision_rounding);
         $parser->setVariables($variables);
         $result = $parser->getResult();
-        
+
         $this->assertEquals($result[1], $expected_result);
     }
-    
+
     public function variablesData() {
         return [
             ['3*x^2 - 4*y + 3/y', 16.38, ['x' => -4, 'y' => 8], 2],
@@ -88,7 +88,7 @@ class FormulaParserTest extends TestCase
             ['(y)^x', 16, ['x' => 4, 'y' => -2]]
         ];
     }
-    
+
     // 4 -------- Test valid variables ---------------------------------------------------->
 
     /**
@@ -99,10 +99,10 @@ class FormulaParserTest extends TestCase
         $parser->setValidVariables($valid_variables);
         $parser->setVariables($variables);
         $result = $parser->getResult();
-        
+
         $this->assertEquals($result[1], $expected_result);
     }
-    
+
     public function validVariablesData() {
     	$valid_variables = ['x', 'y', 'z', 'a', 'b', 'c', 'd'];
         return [
@@ -115,9 +115,9 @@ class FormulaParserTest extends TestCase
             ['(d)^c', 16, $valid_variables, ['c' => 4, 'd' => -2]]
         ];
     }
-    
+
     // 5 -------- Test numbers in E notation ---------------------------------------------->
-    
+
     /**
      * @dataProvider eData
      */
@@ -125,33 +125,33 @@ class FormulaParserTest extends TestCase
         $parser = new FormulaParser($input_string, $precision_rounding);
         $parser->setVariables($variables);
         $result = $parser->getResult();
-                
+
         $this->assertEquals($result[1], $expected_result);
     }
-    
+
     public function eData() {
         return [
             ['1e3+e+5^30', 9.31323E+20],
-            ['abs(-5^30)', 9.31323E+20],            
+            ['abs(-5^30)', 9.31323E+20],
             ['2^(sqrt(15)^3)', 3.07796E+17],
             ['(-1E3+1)^(1E+1)', 9.90045E+29],
             ['-2^3^4', -2.41785E+24],
             ['4^-0.8e+1/x', 3.81469727e-6, ['x' => 4], 8]
         ];
     }
-     
+
     // 6 -------- Test operator combinations ---------------------------------------------->
-    
+
     /**
      * @dataProvider operatorsData
      */
     public function testOperators($input_string, $expected_result) {
         $parser = new FormulaParser($input_string);
         $result = $parser->getResult();
-        
+
         $this->assertEquals($result[1], $expected_result);
     }
-    
+
     public function operatorsData() {
         return [
             ['10/++--2', 5],
@@ -165,7 +165,7 @@ class FormulaParserTest extends TestCase
             ['2^-+-5', 32]
         ];
     }
-    
+
     // 7 -------- Test exponential expressions -------------------------------------------->
 
     /**
@@ -174,10 +174,10 @@ class FormulaParserTest extends TestCase
     public function testExp($input_string, $expected_result) {
         $parser = new FormulaParser($input_string);
         $result = $parser->getResult();
-        
+
         $this->assertEquals($result[1], $expected_result);
     }
-    
+
     public function expData() {
         return [
             ['10*(3-5)^4/2', 80],
@@ -189,12 +189,12 @@ class FormulaParserTest extends TestCase
             ['8e+1^2', 6400],
             ['exp((-3)^2)', 8103.0839],
             ['cos(-4)^8', 0.0333],
-            ['sin(10^5)', 0.0357], 
+            ['sin(10^5)', 0.0357],
             ['sin(-90)^-5', -1.7511],
             ['pi^sin(e)', 1.6004]
         ];
     }
-    
+
     // 8 --------  Test errors ------------------------------------------------------------>
 
     /**
@@ -204,15 +204,15 @@ class FormulaParserTest extends TestCase
         $parser = new FormulaParser($input_string);
         $parser->setVariables($variables);
         $result = $parser->getResult();
-        
+
         $this->assertEquals($result[1], $expected_result);
     }
-    
+
     public function errorData() {
         return [
             ['5*/7', 'Syntax error'],
             ['^', 'Syntax error'],
-            ['.', 'Syntax error'],            
+            ['.', 'Syntax error'],
             ['()', 'Syntax error'],
             [') (', 'Syntax error'],
             ['(1+1)5', 'Syntax error'],
@@ -231,7 +231,7 @@ class FormulaParserTest extends TestCase
             ['x+y', 'Variable error', ['x' => '1', 'y' => '']]
         ];
     }
-    
+
     // 9 -------- Test other cases -------------------------------------------------------->
 
     /**
@@ -240,10 +240,10 @@ class FormulaParserTest extends TestCase
     public function testOtherCases($input_string, $expected_result) {
         $parser = new FormulaParser($input_string);
         $result = $parser->getResult();
-        
+
         $this->assertEquals($result[1], $expected_result);
     }
-    
+
     public function otherCasesData() {
         return [
             ['5', 5],
@@ -259,5 +259,12 @@ class FormulaParserTest extends TestCase
             ['5e+1^0.5+e', 9.7893],
             ['5E+1+e', 52.7183]
         ];
+    }
+
+    // 9 -------- Test get computed result ---------------------------------------------->
+
+    public function testGetComputedResult()
+    {
+        $this->assertEquals(4, (new FormulaParser('2 + 2'))->getComputedResult());
     }
 }
