@@ -6,7 +6,7 @@
  *
  * @license  MIT (https://github.com/denissimon/formula-parser/blob/master/LICENSE)
  *
- * @version  2.7.1-2019.11.05
+ * @version  2.7.2-2024.11.14
  */
 
 namespace FormulaParser;
@@ -116,10 +116,10 @@ class FormulaParser implements IFormulaParser
     /**
      * @param mixed $value
      *
-     * @return mixed
+     * @return float
      */
     private function return_($value) {
-        if (abs($value) === INF) {
+        if (abs((float) $value) === INF) {
             return $value;
         } else if ($value === 'INF') {
             return INF;
