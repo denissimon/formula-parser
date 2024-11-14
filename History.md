@@ -1,3 +1,8 @@
+## v2.7.2
+
+* Fixed PHP message "TypeError: abs(): Argument #1 ($num) must be of type int|float, string given" in some cases
+* Updated: unit tests (PHPUnit 11.4.3)
+
 ## v2.7.1
 
 * Fixed PHP message "strstr(): Empty needle" in some cases
